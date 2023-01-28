@@ -1,5 +1,5 @@
 {
-	"homepage": "https://hellmaster120.github.io/reactapp/",
+	"homepage": "https://hellmaster120.github.io/reactapp",
 	"name": "reactapp",
 	"version": "0.1.0",
 	"private": true,
@@ -15,7 +15,7 @@
 	"scripts": {
 		"start": "react-scripts start",
 		"predeploy": "npm run build",
-		"deploy": "main -d build",
+		"deploy": "gh-pages -b main -d build",
 		"build": "react-scripts build"
 	},
 	"eslintConfig": {
