@@ -1,5 +1,5 @@
 import {resolve} from "path"
-import React, {useState} from "react"
+import React, {useState, useEffect} from "react"
 import {Outlet, NavLink} from "react-router-dom"
 import "../css/MainLayout.css"
 import logo from "../img/logo.svg"
@@ -78,31 +78,11 @@ const GetData = async (): Promise<FileDataInterface[] | string> => {
 	return ArrayData
 }
 
-const CheckNewData = (): void => {
-	const Cookie = document.cookie.replace(" ", "").search("CheckData")
-	if (Cookie == -1) {
-		const d = new Date()
-		d.setTime(d.getTime() + 2 * 24 * 60 * 60 * 1000)
-		let expires = "expires=" + d.toUTCString()
-		document.cookie = "CheckData " + "=" + ";" + expires + ";path=/"
-		GetData().then((Data) => {
-			FileData = Data
-			if (typeof FileData == "string") {
-				return
-			} else {
-				LocalStorage.setItem("Data", JSON.stringify(FileData))
-			}
-		})
-	}
-}
-
-CheckNewData()
 const GetFileDataHTML = () => {
 	var HTMLData: JSX.Element[] = []
 	var FileData = JSON.parse(LocalStorage.getItem("Data") as string)
 	FileData.forEach((File_: FileDataInterface) => {
 		if (File_.Has_Pages) {
-			console.log(File_)
 			HTMLData.push(
 				<a className="Link" key={File_.ID} href={"https://hellmaster120.github.io/" + File_.Name}>
 					<div>{File_.Name}</div>
@@ -114,7 +94,34 @@ const GetFileDataHTML = () => {
 }
 const MainLayout = (props: any) => {
 	const [Close, SetCloseState] = useState(false)
+	const [loading, setLoading] = useState(true)
+	const [Error, SetError] = useState({Error: false})
 
+	useEffect(() => {
+		const Cookie = document.cookie.replace(" ", "").search("CheckData")
+		if (Cookie == -1 || LocalStorage.getItem("Data") == null) {
+			const d = new Date()
+			d.setTime(d.getTime() + 2 * 24 * 60 * 60 * 1000)
+			let expires = "expires=" + d.toUTCString()
+			document.cookie = "CheckData " + "=" + ";" + expires + ";path=/"
+			GetData()
+				.then((Data) => {
+					FileData = Data
+					if (typeof FileData == "string") {
+					} else {
+						LocalStorage.setItem("Data", JSON.stringify(FileData))
+						setLoading(false)
+					}
+				})
+				.catch((Error) => {
+					SetError({Error: Error})
+				})
+		} else {
+			setLoading(false)
+		}
+	}, [])
+	if (loading) return <h1>Loading...</h1>
+	if (typeof Error.Error == "string") return <h1>{Error.Error}</h1>
 	return (
 		<>
 			<div id="App">
